@@ -7,6 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +63,40 @@ class UserControllerTest {
         // userの検証
         // Modelからuserを取り出す
         User user = (User)result.getModelAndView().getModel().get("user");
+        //System.out.println("*****************************");
+        //System.out.println(user.getId());
+        //System.out.println(user.getName());
+        //System.out.println("*****************************");
         assertEquals(user.getId(), 1);
         assertEquals(user.getName(), "キラメキ太郎");
+    }
+
+
+    @Test
+    @DisplayName("getList() メソッドに対するテスト")
+    @WithMockUser
+    void testGetList() throws Exception {
+     // HTTPリクエストに対するレスポンスの検証
+        MvcResult result = mockMvc.perform(get("/user/list"))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("userlist"))
+            .andExpect(model().hasNoErrors())
+            .andExpect(view().name("user/list"))
+            .andReturn(); // 内容の取得
+
+
+        Map<Integer, String> m = new HashMap<Integer, String>();
+        m.put(1, "キラメキ太郎");
+        m.put(2, "キラメキ次郎");
+        m.put(3, "キラメキ花子");
+
+        ArrayList<User> userlist = (ArrayList<User>)result.getModelAndView().getModel().get("userlist");
+
+        assertEquals(userlist.size(), 3);
+
+        for (int i = 0; i < userlist.size(); i++) {
+            assertEquals(userlist.get(i).getId(), i+1);
+            assertEquals(userlist.get(i).getName(), m.get(i+1));
+        }
     }
 }
